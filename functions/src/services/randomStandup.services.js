@@ -5,7 +5,7 @@ import connectDb from '../gateway/randomStandup.gateway.js';
 export const addCohort = async (req, res) => {
 
     if(!req.body || !req.body.season || !req.body.year || !req.body.fulltime){
-        res.status(401).send('Invalid request for creating Cohort Doc');
+        res.status(401).send('Invalid request for creating Cohort');
         return;
     }
 
@@ -28,7 +28,7 @@ export const addCohort = async (req, res) => {
 export const addStudent = async (req, res) => {
 
     if(!req.body || !req.body.name || !req.body.aka){
-        res.status(401).send('Invalid request for creating Student Doc');
+        res.status(401).send('Invalid request for creating Student');
         return;
     }
 
@@ -71,8 +71,7 @@ export const getAllStudents = async (req, res) => {
     const db = connectDb();
 
     try {
-        const cohortRef = db.collection('cohorts').where("year", "==", 2022).where("fulltime", "==", false)
-        const snapshot = await cohortRef.listCollections()
+        const snapshot = await db.collection('students').get()
 
         const studentsArray = snapshot.docs.map( doc => {
             let studentDoc = doc.data();
@@ -98,7 +97,7 @@ export const getAllStudentsByCohort = async (req, res) => {
     const db = connectDb();
 
     try {
-        const studentsDoc = await db.collection('cohorts').where('__name__', '==' ,cohortId).get();
+        const studentsDoc = await db.collection('students').where('cohortId', '==' ,cohortId).get();
         const studentsData = studentsDoc.docs.map((doc) => doc.data());
         res.send(studentsData);
     } catch (err) {
@@ -106,75 +105,125 @@ export const getAllStudentsByCohort = async (req, res) => {
     }
 }
 
-// updateCohort,
-// updateStudent,
-// deactivateCohort,
-// deactivateStudent,
-
 // // UPDATE
 
-// function validateUpdateParams (req){
-//     if(!req.params.templateDocId || !req.body){
-//         return -1
-//     }
-//     return 0
-// }
+function validateUpdateParams (req){
+    if(!req.params.cohortId || !req.body){
+        return -1
+    }
+    return 0
+}
 
-// export function updateTemplateDoc(req, res){
-//     const { templateDocId } = req.params
+export function updateCohort(req, res){
+    const { cohortId } = req.params
 
-//     if(validateUpdateParams(req) < 0){
-//         res.status(401).send('Invalid request for update: ' + templateDocId);
-//         return;
-//     }
+    if(validateUpdateParams(req) < 0){
+        res.status(401).send('Invalid request for update: ' + cohortId);
+        return;
+    }
 
-//     const db = connectDb();
+    const db = connectDb();
 
-//     db.collection('templates').doc(templateDocId).update(req.body)
-//         try {
+    db.collection('cohorts').doc(cohortId).update(req.body)
+        try {
+            res.status(201).send('Cohort Updated ' + cohortId)
+        } catch (err){
+            res.status(500).send(err)
+        }
+}
 
-//             res.status(201).send('Template Updated ' + templateDocId)
-//         } catch (err){
-//             res.status(500).send(err)
-//         }
-// }
+export function updateStudent(req, res){
+    const { studentId } = req.params
+
+    if(validateUpdateParams(req) < 0){
+        res.status(401).send('Invalid request for update: ' + studentId);
+        return;
+    }
+
+    const db = connectDb();
+
+    db.collection('students').doc(studentId).update(req.body)
+        try {
+
+            res.status(201).send('Student Updated ' + studentId)
+        } catch (err){
+            res.status(500).send(err)
+        }
+}
 
 // // DELETE
 
-// // HARD DELETE
-// export function eraseTemplateDoc(req, res){
-//     const { templateDocId } = req.params
-//     // validate req params
-//     if(!templateDocId){
-//         res.status(401).send('Invalid request for erase: ' + templateDocId);
-//         return;
-//     }
-//     // connect to DB
-//     const db = connectDb();
-//     // hard delete data
-//     db.collection('templates').doc(templateDocId).delete()
-//     try{
-//         res.status(201).send('Template erased: ' + templateDocId)
-//     } catch (err) {
-//         res.status(500).send(err)
-//     }
-// }
+// HARD DELETE
+export function deleteCohort(req, res){
+    const { cohortId } = req.params
+    // validate req params
+    if(!cohortId){
+        res.status(401).send('Invalid request for delete Cohort: ' + cohortId);
+        return;
+    }
+    // connect to DB
+    const db = connectDb();
+    // hard delete data
+    db.collection('cohorts').doc(cohortId).delete()
+    try{
+        res.status(201).send('Cohort deleted: ' + cohortId)
+    } catch (err) {
+        res.status(500).send(err)
+    }
+}
 
-// // SOFT DELETE
-// export function deleteTemplateDoc(req, res){
-//     const { templateDocId } = req.params
-//     // validate req params
-//     if(!templateDocId){
-//         res.status(401).send('Invalid request for delete: ' + templateDocId);
-//         return;
-//     }
-//     // connect to DB
-//     const db = connectDb();
-//     // hard delete data
-//     db.collection('templates').doc(templateDocId).update({deletedAt: new Date()})
-//     try{
-//         res.status(201).send('Template deleted: ' + templateDocId)
-//     } catch (err) {
-//         res.status(500).send(err)
-//     }
-// }
+export function deleteStudent(req, res){
+    const { studentsId } = req.params
+    // validate req params
+    if(!studentsId){
+        res.status(401).send('Invalid request for delete Student: ' + studentsId);
+        return;
+    }
+    // connect to DB
+    const db = connectDb();
+    // hard delete data
+    db.collection('students').doc(studentsId).delete()
+    try{
+        res.status(201).send('Student deleted: ' + studentsId)
+    } catch (err) {
+        res.status(500).send(err)
+    }
+}
+
+// SOFT DELETE
+export function deactivateCohort(req, res){
+    const { cohortId } = req.params
+    // validate req params
+    if(!cohortId){
+        res.status(401).send('Invalid request for Cohort deactivation: ' + cohortId);
+        return;
+    }
+    // connect to DB
+    const db = connectDb();
+    // hard delete data
+    db.collection('cohorts').doc(cohortId).update({deletedAt: new Date()})
+    try{
+        res.status(201).send('Cohort deactivated: ' + cohortId)
+    } catch (err) {
+        res.status(500).send(err)
+    }
+}
+
+export function deactivateStudent(req, res){
+    const { studentId } = req.params
+    // validate req params
+    if(!studentId){
+        res.status(401).send('Invalid request for Student deactivation: ' + studentId);
+        return;
+    }
+    // connect to DB
+    const db = connectDb();
+    // hard delete data
+    db.collection('students').doc(studentId).update({deletedAt: new Date()})
+    try{
+        res.status(201).send('Student deactivated: ' + studentId)
+    } catch (err) {
+        res.status(500).send(err)
+    }
+}
+
