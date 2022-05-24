@@ -15,11 +15,11 @@ export const randomStandupRoutes = Router();
 
 // - API ENDPOINTS - API ROUTES
 
-randomStandupRoutes.post('/cohort', addCohort);
-randomStandupRoutes.get('/cohort', getAllCohorts);
+randomStandupRoutes.post('/cohorts', addCohort);
+randomStandupRoutes.get('/cohorts', getAllCohorts);
 
-randomStandupRoutes.post('/cohort', addStudent);
-randomStandupRoutes.get('/cohort', getAllStudents);
+randomStandupRoutes.post('/students', addStudent);
+randomStandupRoutes.get('/students', getAllStudents);
 randomStandupRoutes.get('/:cohortId', getAllStudentsByCohort);
 
 // randomStandupRoutes.patch('/:cohortId', updateCohort);

@@ -71,20 +71,22 @@ export const getAllStudents = async (req, res) => {
     const db = connectDb();
 
     try {
-        const snapshot = await db.collection('students').get();
+        const cohortRef = db.collection('cohorts').where("year", "==", 2022).where("fulltime", "==", false)
+        const snapshot = await cohortRef.listCollections()
+
         const studentsArray = snapshot.docs.map( doc => {
             let studentDoc = doc.data();
             studentDoc.id = doc.id;
             return studentDoc
         })
         res.send(studentsArray);
+
     } catch (err) {
         res.status(500).send(err);
     }
 }
 
-
-export const getStudentsByCohort = async (req, res) => {
+export const getAllStudentsByCohort = async (req, res) => {
 
     const { cohortId } = req.params
 
